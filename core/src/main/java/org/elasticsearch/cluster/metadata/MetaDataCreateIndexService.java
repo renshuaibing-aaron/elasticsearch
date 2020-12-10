@@ -1,21 +1,3 @@
-/*
- * Licensed to Elasticsearch under one or more contributor
- * license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright
- * ownership. Elasticsearch licenses this file to you under
- * the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 
 package org.elasticsearch.cluster.metadata;
 
@@ -206,6 +188,8 @@ public class MetaDataCreateIndexService extends AbstractComponent {
      */
     public void createIndex(final CreateIndexClusterStateUpdateRequest request,
                             final ActionListener<CreateIndexClusterStateUpdateResponse> listener) {
+
+        System.out.println("【创建索引】");
         onlyCreateIndex(request, ActionListener.wrap(response -> {
             if (response.isAcknowledged()) {
                 activeShardsObserver.waitForActiveShards(new String[]{request.index()}, request.waitForActiveShards(), request.ackTimeout(),
@@ -228,6 +212,8 @@ public class MetaDataCreateIndexService extends AbstractComponent {
         Settings build = updatedSettingsBuilder.put(request.settings()).normalizePrefix(IndexMetaData.INDEX_SETTING_PREFIX).build();
         indexScopedSettings.validate(build, true); // we do validate here - index setting must be consistent
         request.settings(build);
+
+        System.out.println("【提交IndexCreationTask】");
         clusterService.submitStateUpdateTask("create-index [" + request.index() + "], cause [" + request.cause() + "]",
             new IndexCreationTask(logger, allocationService, request, listener, indicesService, aliasValidator, xContentRegistry, settings,
                 this::validate));
@@ -237,6 +223,9 @@ public class MetaDataCreateIndexService extends AbstractComponent {
         void validate(CreateIndexClusterStateUpdateRequest request, ClusterState state);
     }
 
+    /**
+     * 创建索引这样的操作需要通知到集群中各个节点，修改集群的状态，因此IndexCreationTask继承了AckedClusterStateUpdateTask
+     */
     static class IndexCreationTask extends AckedClusterStateUpdateTask<ClusterStateUpdateResponse> {
 
         private final IndicesService indicesService;

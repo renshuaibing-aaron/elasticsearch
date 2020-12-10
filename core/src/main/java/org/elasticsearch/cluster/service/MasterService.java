@@ -731,9 +731,11 @@ public class MasterService extends AbstractLifecycleComponent {
             return;
         }
         try {
+            //将IndexCreationTask对象转换成可供线程池执行的Runnable任务Batcher.UpdateTask
             List<Batcher.UpdateTask> safeTasks = tasks.entrySet().stream()
                 .map(e -> taskBatcher.new UpdateTask(config.priority(), source, e.getKey(), safe(e.getValue()), executor))
                 .collect(Collectors.toList());
+
             taskBatcher.submitTasks(safeTasks, config.timeout());
         } catch (EsRejectedExecutionException e) {
             // ignore cases where we are shutting down..., there is really nothing interesting

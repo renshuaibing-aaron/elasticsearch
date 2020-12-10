@@ -1,22 +1,3 @@
-/*
- * Licensed to Elasticsearch under one or more contributor
- * license agreements. See the NOTICE file distributed with
- * this work for additional information regarding copyright
- * ownership. Elasticsearch licenses this file to you under
- * the Apache License, Version 2.0 (the "License"); you may
- * not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-
 package org.elasticsearch.rest;
 
 import org.apache.logging.log4j.message.ParameterizedMessage;
@@ -166,11 +147,13 @@ public class RestController extends AbstractComponent implements HttpServerTrans
 
     @Override
     public void dispatchRequest(RestRequest request, RestChannel channel, ThreadContext threadContext) {
+        System.out.println("【RestController模块进行实际的分发过程】");
         if (request.rawPath().equals("/favicon.ico")) {
             handleFavicon(request, channel);
             return;
         }
         try {
+            //找出所有可能的handlers，然后分发这些请求
             tryAllHandlers(request, channel, threadContext);
         } catch (Exception e) {
             try {
@@ -330,9 +313,11 @@ public class RestController extends AbstractComponent implements HttpServerTrans
         }
 
         // Loop through all possible handlers, attempting to dispatch the request
+        // 获取所有可能的Handler，并尝试分发request请求
         Iterator<MethodHandlers> allHandlers = getAllHandlers(request);
         for (Iterator<MethodHandlers> it = allHandlers; it.hasNext(); ) {
             final Optional<RestHandler> mHandler = Optional.ofNullable(it.next()).flatMap(mh -> mh.getHandler(request.method()));
+            //进行request请求分发，如果分发成功，则返回true
             requestHandled = dispatchRequest(request, channel, client, mHandler);
             if (requestHandled) {
                 break;

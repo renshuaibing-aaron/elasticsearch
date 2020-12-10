@@ -94,9 +94,26 @@ Map<String, String> buildMetadataMap = buildMetadataValue.tokenize(';').collectE
   def (String key, String value) = it.split('=')
   return [key, value]
 }
+buildscript {
+  repositories {
+    maven{ url 'http://maven.aliyun.com/nexus/content/groups/public'}
+    //jcenter()
+  }
+  dependencies {
+    classpath 'com.android.tools.build:gradle:2.2.2'
+
+    // NOTE: Do not place your application dependencies here; they belong
+    // in the individual module build.gradle files
+  }
+}
 
 // injecting groovy property variables into all projects
 allprojects {
+
+  repositories {
+    maven{ url 'http://maven.aliyun.com/nexus/content/groups/public'}
+    //jcenter()
+  }
   project.ext {
     // for ide hacks...
     isEclipse = System.getProperty("eclipse.launcher") != null || gradle.startParameter.taskNames.contains('eclipse') || gradle.startParameter.taskNames.contains('cleanEclipse')
